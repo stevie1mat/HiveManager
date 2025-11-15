@@ -12,6 +12,7 @@ import InspectionDetailsScreen from '../screens/main/InspectionDetailsScreen';
 import HoneyProductionScreen from '../screens/main/HoneyProductionScreen';
 import LogHoneyHarvestScreen from '../screens/main/LogHoneyHarvestScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
+import EditProfileScreen from '../screens/main/EditProfileScreen';
 import AddHiveScreen from '../screens/main/AddHiveScreen';
 
 const Tab = createBottomTabNavigator();
@@ -27,31 +28,60 @@ const HoneyStack = ({ navigation }) => {
           title: 'Honey Production',
           headerTitleAlign: 'left',
           headerStyle: {
-            height: 125,
-            backgroundColor: '#fcfbf8',
+            height: 112,
+            backgroundColor: '#f9f1e8',
             borderBottomWidth: 1,
-            borderBottomColor: '#e8e2ce',
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
           },
           headerTitleStyle: {
-            fontSize: 18,
-            fontWeight: 'bold',
+            fontSize: 20,
+            fontWeight: '600',
             fontFamily: FONTS.heading,
-            color: '#1c180d',
-            paddingBottom: 12,
+            color: '#343A40',
+            paddingBottom: 6,
+            letterSpacing: -0.3,
+          },
+          headerLeftContainerStyle: {
+            paddingBottom: 8,
           },
           headerRightContainerStyle: {
-            paddingBottom: 12,
+            paddingBottom: 8,
           },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 8,
+              }}
+              onPress={() => {
+                navigation.navigate('HoneyProduction', { openSidebar: true });
+              }}
+            >
+              <Ionicons name="menu" size={24} color="#343A40" />
+            </TouchableOpacity>
+          ),
           headerRight: () => (
             <TouchableOpacity
               style={{
                 marginRight: 16,
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: '#F4C025',
+                backgroundColor: 'rgba(244, 192, 37, 0.9)',
                 paddingHorizontal: 12,
                 paddingVertical: 8,
-                borderRadius: 8,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(244, 192, 37, 0.5)',
+                shadowColor: '#F4C025',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 5,
               }}
               onPress={() => navigation.navigate('LogHoneyHarvest')}
             >
@@ -68,25 +98,31 @@ const HoneyStack = ({ navigation }) => {
         component={LogHoneyHarvestScreen}
         options={({ navigation }) => ({
           title: 'Log Honey Harvest',
-          headerTitleAlign: 'center',
+          headerTitleAlign: 'left',
           headerTintColor: '#000000',
           headerBackTitleVisible: false,
           headerStyle: {
-            backgroundColor: '#fcfbf8',
+            backgroundColor: '#f9f1e8',
             borderBottomWidth: 1,
-            borderBottomColor: '#e8e2ce',
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
           },
           headerTitleStyle: {
-            fontSize: 18,
-            fontWeight: 'bold',
+            fontSize: 20,
+            fontWeight: '600',
             fontFamily: FONTS.heading,
-            color: '#1c180d',
+            color: '#343A40',
+            letterSpacing: -0.3,
           },
           headerLeft: () => (
             <TouchableOpacity
               style={{
                 marginLeft: 16,
-                padding: 4,
+                padding: 8,
               }}
               onPress={() => navigation.goBack()}
             >
@@ -110,12 +146,22 @@ const HiveStack = ({ navigation }) => {
           headerTitleAlign: 'left',
           headerStyle: {
             height: 112,
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
           },
           headerTitleStyle: {
-            fontSize: 22,
-            fontWeight: 'bold',
+            fontSize: 20,
+            fontWeight: '600',
             fontFamily: FONTS.heading,
+            color: '#343A40',
             paddingBottom: 6,
+            letterSpacing: -0.3,
           },
           headerLeftContainerStyle: {
             paddingBottom: 8,
@@ -127,33 +173,46 @@ const HiveStack = ({ navigation }) => {
             <TouchableOpacity
               style={{
                 marginLeft: 16,
-                padding: 4,
+                padding: 8,
+                borderRadius: 12,
+                backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.8)',
+                shadowColor: '#000',
+                shadowOffset: { width: 2, height: 2 },
+                shadowOpacity: 0.08,
+                shadowRadius: 6,
+                elevation: 3,
               }}
               onPress={() => {
-                // Access the DashboardScreen component to toggle sidebar
-                const route = navigation.getState()?.routes?.find(r => r.name === 'Dashboard');
-                if (route?.params) {
-                  navigation.setParams({ openSidebar: true });
-                }
+                // Navigate to Dashboard with openSidebar param
+                navigation.navigate('Dashboard', { openSidebar: true });
               }}
             >
-              <Ionicons name="menu" size={24} color="#343A40" />
+              <Ionicons name="menu" size={22} color="#343A40" />
             </TouchableOpacity>
           ),
           headerRight: () => (
             <TouchableOpacity
               style={{
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                backgroundColor: '#FFC107',
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                backgroundColor: 'rgba(244, 192, 37, 0.9)',
+                borderWidth: 1,
+                borderColor: 'rgba(244, 192, 37, 0.5)',
                 justifyContent: 'center',
                 alignItems: 'center',
                 marginRight: 16,
+                shadowColor: '#F4C025',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 5,
               }}
               onPress={() => navigation.navigate('AddHive')}
             >
-              <Ionicons name="add" size={18} color="#343A40" />
+              <Ionicons name="add" size={20} color="#343A40" />
             </TouchableOpacity>
           ),
         })}
@@ -168,12 +227,27 @@ const HiveStack = ({ navigation }) => {
           headerBackTitleVisible: false,
           headerStyle: {
             height: 120,
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
           },
           headerLeft: () => (
             <TouchableOpacity
               style={{
                 marginLeft: 16,
-                padding: 4,
+                padding: 8,
               }}
               onPress={() => navigation.goBack()}
             >
@@ -186,10 +260,17 @@ const HiveStack = ({ navigation }) => {
                 marginRight: 16,
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: '#FFC107',
+                backgroundColor: 'rgba(244, 192, 37, 0.9)',
                 paddingHorizontal: 12,
                 paddingVertical: 8,
-                borderRadius: 8,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(244, 192, 37, 0.5)',
+                shadowColor: '#F4C025',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 5,
               }}
               onPress={() => {
                 const hiveId = route.params?.hiveId;
@@ -218,14 +299,31 @@ const HiveStack = ({ navigation }) => {
 
           return {
             title: 'New Inspection',
-            headerTitleAlign: 'center',
+            headerTitleAlign: 'left',
             headerTintColor: '#000000',
             headerBackTitleVisible: false,
+            headerStyle: {
+              backgroundColor: '#f9f1e8',
+              borderBottomWidth: 1,
+              borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 4,
+            },
+            headerTitleStyle: {
+              fontSize: 20,
+              fontWeight: '600',
+              fontFamily: FONTS.heading,
+              color: '#343A40',
+              letterSpacing: -0.3,
+            },
             headerLeft: () => (
               <TouchableOpacity
                 style={{
                   marginLeft: 16,
-                  padding: 4,
+                  padding: 8,
                 }}
                 onPress={() => navigation.goBack()}
               >
@@ -234,7 +332,7 @@ const HiveStack = ({ navigation }) => {
             ),
             headerRight: () => (
               <View style={{ marginRight: 16 }}>
-                <Text style={{ color: '#9c8749', fontSize: 16, fontWeight: '600' }}>
+                <Text style={{ color: '#6C757D', fontSize: 15, fontWeight: '600' }}>
                   {formatDate()}
                 </Text>
               </View>
@@ -250,11 +348,28 @@ const HiveStack = ({ navigation }) => {
           headerTitleAlign: 'left',
           headerTintColor: '#000000',
           headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
+          },
           headerLeft: () => (
             <TouchableOpacity
               style={{
                 marginLeft: 16,
-                padding: 4,
+                padding: 8,
               }}
               onPress={() => navigation.goBack()}
             >
@@ -268,13 +383,128 @@ const HiveStack = ({ navigation }) => {
         component={AddHiveScreen}
         options={({ navigation }) => ({
           title: 'Add New Hive',
+          headerTitleAlign: 'left',
           headerTintColor: '#000000',
           headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
+          },
           headerLeft: () => (
             <TouchableOpacity
               style={{
-                marginLeft: 10,
-                padding: 4,
+                marginLeft: 16,
+                padding: 8,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+    </Stack.Navigator>
+  );
+};
+
+const SettingsStack = ({ navigation }) => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={({ navigation }) => ({
+          title: 'My Account',
+          tabBarLabel: 'My Account',
+          headerShown: true,
+          headerTitleAlign: 'left',
+          headerStyle: {
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 8,
+              }}
+              onPress={() => {
+                navigation.navigate('Settings', { openSidebar: true });
+              }}
+            >
+              <Ionicons name="menu" size={24} color="#343A40" />
+            </TouchableOpacity>
+          ),
+          headerRight: () => (
+            <TouchableOpacity
+              style={{ marginRight: 16 }}
+              onPress={() => {
+                navigation.navigate('EditProfile');
+              }}
+            >
+              <Text style={{ color: '#F4C025', fontSize: 16, fontWeight: 'bold' }}>
+                Edit Profile
+              </Text>
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={({ navigation }) => ({
+          title: 'Edit Profile',
+          headerTitleAlign: 'left',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 8,
               }}
               onPress={() => navigation.goBack()}
             >
@@ -292,7 +522,7 @@ const MainNavigator = () => {
     <Tab.Navigator
       screenOptions={({ route }) => {
         const routeName = getFocusedRouteNameFromRoute(route) ?? 'Dashboard';
-        const hideTabBar = routeName === 'NewInspection' || routeName === 'AddHive' || routeName === 'LogHoneyHarvest';
+        const hideTabBar = routeName === 'NewInspection' || routeName === 'AddHive' || routeName === 'LogHoneyHarvest' || routeName === 'EditProfile';
 
         return {
           tabBarIcon: ({ focused, color, size }) => {
@@ -346,40 +576,7 @@ const MainNavigator = () => {
     >
       <Tab.Screen name="Hives" component={HiveStack} />
       <Tab.Screen name="Honey" component={HoneyStack} />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          title: 'My Account',
-          tabBarLabel: 'My Account',
-          headerShown: true,
-          headerTitleAlign: 'left',
-          headerStyle: {
-            backgroundColor: '#fcfbf8',
-            borderBottomWidth: 1,
-            borderBottomColor: '#e8e2ce',
-          },
-          headerTitleStyle: {
-            fontSize: 18,
-            fontWeight: 'bold',
-            fontFamily: FONTS.heading,
-            color: '#1c180d',
-          },
-          headerRight: () => (
-            <TouchableOpacity
-              style={{ marginRight: 16 }}
-              onPress={() => {
-                // Navigate to edit profile or show alert
-                Alert.alert('Edit Profile', 'Edit profile functionality coming soon');
-              }}
-            >
-              <Text style={{ color: '#F4C025', fontSize: 16, fontWeight: 'bold' }}>
-                Edit Profile
-              </Text>
-            </TouchableOpacity>
-          ),
-        }}
-      />
+      <Tab.Screen name="Settings" component={SettingsStack} />
     </Tab.Navigator>
   );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,10 +12,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useHive } from '../../context/HiveContext';
 import { FONTS } from '../../constants/fonts';
+import Sidebar from '../../components/Sidebar';
 
-const SettingsScreen = ({ navigation }) => {
+const SettingsScreen = ({ navigation, route }) => {
   const { user, logout } = useAuth();
   const { hives } = useHive();
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+
+  // Listen for navigation params to open sidebar
+  useEffect(() => {
+    if (route?.params?.openSidebar) {
+      setSidebarVisible(true);
+      navigation.setParams({ openSidebar: false });
+    }
+  }, [route?.params?.openSidebar, navigation]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -78,13 +88,22 @@ const SettingsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Sidebar
+        visible={sidebarVisible}
+        onClose={() => setSidebarVisible(false)}
+        navigation={navigation}
+      />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Header */}
-        <View style={styles.profileCard}>
+        <TouchableOpacity
+          style={styles.profileCard}
+          onPress={() => navigation.navigate('EditProfile')}
+          activeOpacity={0.8}
+        >
           <View style={styles.profileContent}>
             <View style={styles.profileInfo}>
               <View style={styles.avatarContainer}>
@@ -97,8 +116,9 @@ const SettingsScreen = ({ navigation }) => {
                 <Text style={styles.profileEmail}>{user?.email || ''}</Text>
               </View>
             </View>
+            <Ionicons name="chevron-forward" size={20} color="#6C757D" />
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* My Hives Section */}
         <SettingSection title="My Hives">
@@ -108,7 +128,7 @@ const SettingsScreen = ({ navigation }) => {
               onPress={() => navigation.navigate('Hives', { screen: 'AddHive' })}
               activeOpacity={0.8}
             >
-              <Ionicons name="add" size={20} color="#343A40" />
+              <Ionicons name="add" size={20} color="#343A40" style={{ marginRight: 8 }} />
               <Text style={styles.addHiveButtonText}>Add New Beehive</Text>
             </TouchableOpacity>
             <View style={styles.divider} />
@@ -181,7 +201,7 @@ const SettingsScreen = ({ navigation }) => {
             onPress={handleLogout}
             activeOpacity={0.8}
           >
-            <Ionicons name="log-out-outline" size={20} color="#DC3545" />
+            <Ionicons name="log-out-outline" size={20} color="#DC3545" style={{ marginRight: 8 }} />
             <Text style={styles.logoutText}>Log Out</Text>
           </TouchableOpacity>
         </View>
@@ -193,7 +213,7 @@ const SettingsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fcfbf8',
+    backgroundColor: '#f9f1e8',
   },
   scrollView: {
     flex: 1,
@@ -203,15 +223,23 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   profileCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
     borderRadius: 12,
-    padding: 16,
+    padding: 20,
     marginBottom: 32,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.9)',
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(0, 0, 0, 0.05)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    elevation: 12,
   },
   profileContent: {
     flexDirection: 'row',
@@ -226,15 +254,15 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: '#F4C025',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     fontFamily: FONTS.heading,
     color: '#1c180d',
@@ -268,14 +296,23 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   hivesCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
     borderRadius: 12,
     overflow: 'hidden',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.9)',
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(0, 0, 0, 0.05)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    elevation: 12,
+    marginBottom: 16,
   },
   addHiveButton: {
     flexDirection: 'row',
@@ -283,8 +320,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 48,
     paddingHorizontal: 20,
-    backgroundColor: '#F4C025',
-    gap: 8,
+    backgroundColor: 'rgba(244, 192, 37, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(244, 192, 37, 0.5)',
+    marginRight: 8,
   },
   addHiveButtonText: {
     fontSize: 16,
@@ -294,17 +333,26 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#E9ECEF',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
   settingsCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
     borderRadius: 12,
     overflow: 'hidden',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.9)',
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(0, 0, 0, 0.05)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    elevation: 12,
+    marginBottom: 16,
   },
   settingItem: {
     flexDirection: 'row',
@@ -319,13 +367,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: '#F8F9FA',
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   settingItemText: {
     fontSize: 16,
@@ -343,9 +398,11 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#DC354530',
-    backgroundColor: 'transparent',
-    gap: 8,
+    borderColor: 'rgba(220, 53, 69, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 16,
   },
   logoutText: {
     fontSize: 16,
