@@ -148,6 +148,7 @@ CREATE TABLE harvests (
   date date NOT NULL,
   quantity numeric NOT NULL,
   unit text NOT NULL,
+  notes text,
   created_at timestamptz DEFAULT now()
 );
 
@@ -174,7 +175,21 @@ CREATE POLICY "Users can insert own harvests"
       AND hives.user_id = auth.uid()
     )
   );
+
+CREATE POLICY "Users can delete own harvests"
+  ON harvests FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM hives
+      WHERE hives.id = harvests.hive_id
+      AND hives.user_id = auth.uid()
+    )
+  );
 ```
+
+**Note:** If you created the `harvests` table before the `notes` column was added, run the migration in `add_harvests_notes_column.sql` to add the `notes` column.
+
+**Note:** If you need to enable deletion of harvests, run the migration in `add_harvests_delete_policy.sql` to add the DELETE policy.
 
 ## 4. Authentication Setup
 

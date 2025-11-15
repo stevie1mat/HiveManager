@@ -368,6 +368,7 @@ export const HiveProvider = ({ children }) => {
           date: dateValue,
           quantity: harvestData.quantity,
           unit: harvestData.unit,
+          notes: harvestData.notes || null,
         })
         .select()
         .single();
@@ -384,6 +385,7 @@ export const HiveProvider = ({ children }) => {
           date: data.date,
           quantity: data.quantity,
           unit: data.unit,
+          notes: data.notes,
           createdAt: data.created_at,
         };
         setHarvests((prev) => ({
@@ -477,6 +479,97 @@ export const HiveProvider = ({ children }) => {
     return await loadHarvests(hiveId);
   };
 
+  const getAllHarvests = async () => {
+    if (!user?.id) return [];
+
+    try {
+      // Get all hives for the user first
+      const { data: hivesData, error: hivesError } = await supabase
+        .from('hives')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (hivesError || !hivesData) {
+        console.error('Error loading hives for harvests:', hivesError);
+        return [];
+      }
+
+      const hiveIds = hivesData.map((h) => h.id);
+      if (hiveIds.length === 0) return [];
+
+      // Get all harvests for these hives
+      const { data, error } = await supabase
+        .from('harvests')
+        .select('*, hives(hive_id)')
+        .in('hive_id', hiveIds)
+        .order('date', { ascending: false });
+
+      if (error) {
+        console.error('Error loading all harvests:', error);
+        return [];
+      }
+
+      if (data) {
+        const mappedHarvests = data.map((harvest) => ({
+          id: harvest.id,
+          hiveId: harvest.hive_id,
+          hiveName: harvest.hives?.hive_id || `Hive ${harvest.hive_id.slice(-6)}`,
+          date: harvest.date,
+          quantity: harvest.quantity,
+          unit: harvest.unit,
+          notes: harvest.notes,
+          createdAt: harvest.created_at,
+        }));
+        return mappedHarvests;
+      }
+      return [];
+    } catch (error) {
+      console.error('Error loading all harvests:', error);
+      return [];
+    }
+  };
+
+  const deleteHarvest = async (harvestId) => {
+    try {
+      console.log('Deleting harvest:', { harvestId });
+
+      if (!harvestId) {
+        console.error('Missing harvestId');
+        return { success: false, error: 'Harvest ID is required' };
+      }
+
+      const { error } = await supabase
+        .from('harvests')
+        .delete()
+        .eq('id', harvestId);
+
+      if (error) {
+        console.error('Supabase error deleting harvest:', error);
+        return { success: false, error: error.message || 'Failed to delete harvest' };
+      }
+
+      console.log('Harvest deleted successfully from database');
+
+      // Remove from local state
+      setHarvests((prev) => {
+        const newHarvests = { ...prev };
+        Object.keys(newHarvests).forEach((hiveId) => {
+          if (newHarvests[hiveId]) {
+            newHarvests[hiveId] = newHarvests[hiveId].filter(
+              (harvest) => harvest.id !== harvestId
+            );
+          }
+        });
+        return newHarvests;
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Exception deleting harvest:', error);
+      return { success: false, error: error.message || 'Failed to delete harvest' };
+    }
+  };
+
   const value = {
     hives,
     inspections,
@@ -488,8 +581,10 @@ export const HiveProvider = ({ children }) => {
     addInspection,
     deleteInspection,
     addHarvest,
+    deleteHarvest,
     getHiveInspections,
     getHiveHarvests,
+    getAllHarvests,
     refreshHives: loadHives,
   };
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
-import { TouchableOpacity, Text, View } from 'react-native';
+import { TouchableOpacity, Text, View, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { FONTS } from '../constants/fonts';
 import DashboardScreen from '../screens/main/DashboardScreen';
@@ -10,11 +10,94 @@ import HiveDetailsScreen from '../screens/main/HiveDetailsScreen';
 import NewInspectionScreen from '../screens/main/NewInspectionScreen';
 import InspectionDetailsScreen from '../screens/main/InspectionDetailsScreen';
 import HoneyProductionScreen from '../screens/main/HoneyProductionScreen';
+import LogHoneyHarvestScreen from '../screens/main/LogHoneyHarvestScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
 import AddHiveScreen from '../screens/main/AddHiveScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+const HoneyStack = ({ navigation }) => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="HoneyProduction"
+        component={HoneyProductionScreen}
+        options={({ navigation }) => ({
+          title: 'Honey Production',
+          headerTitleAlign: 'left',
+          headerStyle: {
+            height: 125,
+            backgroundColor: '#fcfbf8',
+            borderBottomWidth: 1,
+            borderBottomColor: '#e8e2ce',
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            fontFamily: FONTS.heading,
+            color: '#1c180d',
+            paddingBottom: 12,
+          },
+          headerRightContainerStyle: {
+            paddingBottom: 12,
+          },
+          headerRight: () => (
+            <TouchableOpacity
+              style={{
+                marginRight: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#F4C025',
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 8,
+              }}
+              onPress={() => navigation.navigate('LogHoneyHarvest')}
+            >
+              <Ionicons name="add" size={18} color="#343A40" style={{ marginRight: 6 }} />
+              <Text style={{ color: '#343A40', fontSize: 14, fontWeight: '600' }}>
+                Log Harvest
+              </Text>
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="LogHoneyHarvest"
+        component={LogHoneyHarvestScreen}
+        options={({ navigation }) => ({
+          title: 'Log Honey Harvest',
+          headerTitleAlign: 'center',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: '#fcfbf8',
+            borderBottomWidth: 1,
+            borderBottomColor: '#e8e2ce',
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            fontFamily: FONTS.heading,
+            color: '#1c180d',
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 4,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+    </Stack.Navigator>
+  );
+};
 
 const HiveStack = ({ navigation }) => {
   return (
@@ -209,7 +292,7 @@ const MainNavigator = () => {
     <Tab.Navigator
       screenOptions={({ route }) => {
         const routeName = getFocusedRouteNameFromRoute(route) ?? 'Dashboard';
-        const hideTabBar = routeName === 'NewInspection' || routeName === 'AddHive';
+        const hideTabBar = routeName === 'NewInspection' || routeName === 'AddHive' || routeName === 'LogHoneyHarvest';
 
         return {
           tabBarIcon: ({ focused, color, size }) => {
@@ -262,15 +345,40 @@ const MainNavigator = () => {
       }}
     >
       <Tab.Screen name="Hives" component={HiveStack} />
-      <Tab.Screen
-        name="Honey"
-        component={HoneyProductionScreen}
-        options={{ title: 'Honey Production' }}
-      />
+      <Tab.Screen name="Honey" component={HoneyStack} />
       <Tab.Screen
         name="Settings"
         component={SettingsScreen}
-        options={{ title: 'Settings' }}
+        options={{
+          title: 'My Account',
+          tabBarLabel: 'My Account',
+          headerShown: true,
+          headerTitleAlign: 'left',
+          headerStyle: {
+            backgroundColor: '#fcfbf8',
+            borderBottomWidth: 1,
+            borderBottomColor: '#e8e2ce',
+          },
+          headerTitleStyle: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            fontFamily: FONTS.heading,
+            color: '#1c180d',
+          },
+          headerRight: () => (
+            <TouchableOpacity
+              style={{ marginRight: 16 }}
+              onPress={() => {
+                // Navigate to edit profile or show alert
+                Alert.alert('Edit Profile', 'Edit profile functionality coming soon');
+              }}
+            >
+              <Text style={{ color: '#F4C025', fontSize: 16, fontWeight: 'bold' }}>
+                Edit Profile
+              </Text>
+            </TouchableOpacity>
+          ),
+        }}
       />
     </Tab.Navigator>
   );
