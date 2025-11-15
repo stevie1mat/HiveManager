@@ -87,6 +87,8 @@ export const HiveProvider = ({ children }) => {
           temperament: inspection.temperament,
           swarmCells: inspection.swarm_cells,
           diseases: inspection.diseases,
+          broodFrames: inspection.brood_frames,
+          honeyFrames: inspection.honey_frames,
           notes: inspection.notes,
           createdAt: inspection.created_at,
         }));
@@ -259,32 +261,60 @@ export const HiveProvider = ({ children }) => {
 
   const addInspection = async (inspectionData) => {
     try {
+      console.log('addInspection called with:', inspectionData);
+      
+      if (!inspectionData.hiveId) {
+        console.error('Missing hiveId in inspectionData');
+        return { success: false, error: 'Hive ID is required' };
+      }
+
       // Convert date string to ISO format if needed
       const dateValue = inspectionData.date instanceof Date 
         ? inspectionData.date.toISOString() 
         : new Date(inspectionData.date).toISOString();
 
+      // Helper to convert empty strings or 'None' to null
+      const sanitizeField = (value) => {
+        if (!value) return null;
+        const trimmed = typeof value === 'string' ? value.trim() : String(value).trim();
+        return trimmed === '' || trimmed === 'None' ? null : trimmed;
+      };
+
+      const insertData = {
+        hive_id: inspectionData.hiveId,
+        date: dateValue,
+        general_health: inspectionData.generalHealth,
+        queen_status: inspectionData.queenStatus,
+        temperament: sanitizeField(inspectionData.temperament),
+        swarm_cells: sanitizeField(inspectionData.swarmCells),
+        diseases: sanitizeField(inspectionData.diseases),
+        notes: sanitizeField(inspectionData.notes),
+      };
+
+      // Include frame counts (requires running add_frames_columns.sql migration first)
+      if (inspectionData.broodFrames !== undefined && inspectionData.broodFrames !== null) {
+        insertData.brood_frames = inspectionData.broodFrames;
+      }
+      if (inspectionData.honeyFrames !== undefined && inspectionData.honeyFrames !== null) {
+        insertData.honey_frames = inspectionData.honeyFrames;
+      }
+
+      console.log('Inserting inspection data:', insertData);
+
       const { data, error } = await supabase
         .from('inspections')
-        .insert({
-          hive_id: inspectionData.hiveId,
-          date: dateValue,
-          general_health: inspectionData.generalHealth,
-          queen_status: inspectionData.queenStatus,
-          temperament: inspectionData.temperament || null,
-          swarm_cells: inspectionData.swarmCells || null,
-          diseases: inspectionData.diseases || null,
-          notes: inspectionData.notes || null,
-        })
+        .insert(insertData)
         .select()
         .single();
 
       if (error) {
-        console.error('Error adding inspection:', error);
+        console.error('Supabase error adding inspection:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
         return { success: false, error: error.message || 'Failed to add inspection' };
       }
 
       if (data) {
+        console.log('Inspection saved successfully:', data);
         const newInspection = {
           id: data.id,
           hiveId: data.hive_id,
@@ -294,6 +324,8 @@ export const HiveProvider = ({ children }) => {
           temperament: data.temperament,
           swarmCells: data.swarm_cells,
           diseases: data.diseases,
+          broodFrames: data.brood_frames,
+          honeyFrames: data.honey_frames,
           notes: data.notes,
           createdAt: data.created_at,
         };
@@ -313,9 +345,11 @@ export const HiveProvider = ({ children }) => {
         return { success: true, inspection: newInspection };
       }
 
-      return { success: false, error: 'Failed to add inspection' };
+      console.error('No data returned from insert');
+      return { success: false, error: 'Failed to add inspection - no data returned' };
     } catch (error) {
-      console.error('Error adding inspection:', error);
+      console.error('Exception adding inspection:', error);
+      console.error('Error stack:', error.stack);
       return { success: false, error: error.message || 'Failed to add inspection' };
     }
   };
@@ -371,35 +405,61 @@ export const HiveProvider = ({ children }) => {
 
   const deleteInspection = async (inspectionId, hiveId) => {
     try {
-      const { error } = await supabase
+      console.log('Deleting inspection:', { inspectionId, hiveId });
+
+      if (!inspectionId) {
+        console.error('Missing inspectionId');
+        return { success: false, error: 'Inspection ID is required' };
+      }
+
+      if (!hiveId) {
+        console.error('Missing hiveId');
+        return { success: false, error: 'Hive ID is required' };
+      }
+
+      const { error, data } = await supabase
         .from('inspections')
         .delete()
-        .eq('id', inspectionId);
+        .eq('id', inspectionId)
+        .select();
 
       if (error) {
-        console.error('Error deleting inspection:', error);
+        console.error('Supabase error deleting inspection:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
         return { success: false, error: error.message || 'Failed to delete inspection' };
       }
+
+      console.log('Inspection deleted successfully from database');
 
       // Remove from local state
       setInspections((prev) => {
         const newInspections = { ...prev };
         if (newInspections[hiveId]) {
+          const beforeCount = newInspections[hiveId].length;
           newInspections[hiveId] = newInspections[hiveId].filter(
             (inspection) => inspection.id !== inspectionId
           );
+          const afterCount = newInspections[hiveId].length;
+          console.log(`Removed inspection from context. Before: ${beforeCount}, After: ${afterCount}`);
+        } else {
+          console.warn(`Hive ${hiveId} not found in inspections context`);
         }
         return newInspections;
       });
 
       return { success: true };
     } catch (error) {
-      console.error('Error deleting inspection:', error);
+      console.error('Exception deleting inspection:', error);
+      console.error('Error stack:', error.stack);
       return { success: false, error: error.message || 'Failed to delete inspection' };
     }
   };
 
-  const getHiveInspections = async (hiveId) => {
+  const getHiveInspections = async (hiveId, forceReload = false) => {
+    // If force reload, always fetch from server
+    if (forceReload) {
+      return await loadInspections(hiveId);
+    }
     // Check if already loaded
     if (inspections[hiveId]) {
       return inspections[hiveId];

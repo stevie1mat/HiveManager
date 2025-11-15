@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,35 +8,80 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useHive } from '../../context/HiveContext';
 import { FONTS } from '../../constants/fonts';
 
 const HiveDetailsScreen = ({ route, navigation }) => {
   const { hiveId } = route.params;
-  const { hives, getHiveInspections, deleteInspection } = useHive();
+  const { hives, getHiveInspections, deleteInspection, inspections: contextInspections } = useHive();
   const [inspections, setInspections] = useState([]);
   const [loadingInspections, setLoadingInspections] = useState(true);
   const [activeTab, setActiveTab] = useState('Inspections');
+  const isDeletingRef = useRef(false);
   const hive = hives.find((h) => h.id === hiveId);
 
-  useEffect(() => {
-    const loadInspections = async () => {
-      if (hiveId) {
-        setLoadingInspections(true);
-        try {
-          const data = await getHiveInspections(hiveId);
-          setInspections(Array.isArray(data) ? data : []);
-        } catch (error) {
-          console.error('Error loading inspections:', error);
-          setInspections([]);
-        } finally {
-          setLoadingInspections(false);
-        }
+  const loadInspections = useCallback(async (forceReload = false) => {
+    if (hiveId) {
+      setLoadingInspections(true);
+      try {
+        const data = await getHiveInspections(hiveId, forceReload);
+        setInspections(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error loading inspections:', error);
+        setInspections([]);
+      } finally {
+        setLoadingInspections(false);
       }
-    };
+    }
+  }, [hiveId, getHiveInspections]);
+
+  // Load inspections when component mounts
+  useEffect(() => {
     loadInspections();
-  }, [hiveId]);
+  }, [loadInspections]);
+
+  // Sync with context inspections when they update
+  useEffect(() => {
+    // Skip sync if we're in the middle of a deletion (optimistic update is handling it)
+    if (isDeletingRef.current) {
+      return;
+    }
+
+    if (hiveId) {
+      const contextData = contextInspections[hiveId];
+      if (contextData && Array.isArray(contextData)) {
+        // Only update if the context data is actually different
+        setInspections((prev) => {
+          // Check if arrays are the same length and have same IDs
+          const prevIds = prev.map(i => i.id).sort().join(',');
+          const contextIds = contextData.map(i => i.id).sort().join(',');
+          
+          if (prevIds !== contextIds) {
+            return [...contextData];
+          }
+          return prev;
+        });
+      } else if (contextData === undefined) {
+        // Context doesn't have this hive's inspections yet, keep current state
+        // Don't set to empty array as it might clear data before it loads
+      } else {
+        // Explicitly empty array
+        setInspections([]);
+      }
+    }
+  }, [hiveId, contextInspections]);
+
+  // Reload inspections when screen comes into focus (e.g., after adding new inspection)
+  useFocusEffect(
+    useCallback(() => {
+      // Don't reload if we're in the middle of a deletion
+      if (!isDeletingRef.current) {
+        loadInspections();
+      }
+    }, [loadInspections])
+  );
 
   if (!hive) {
     return (
@@ -102,11 +147,24 @@ const HiveDetailsScreen = ({ route, navigation }) => {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
+            // Set flag to prevent sync effect from interfering
+            isDeletingRef.current = true;
+            
+            // Optimistically update UI immediately
+            setInspections((prev) => prev.filter((inspection) => inspection.id !== inspectionId));
+            
             const result = await deleteInspection(inspectionId, hiveId);
             if (result.success) {
-              // Update local state by removing the deleted inspection
-              setInspections((prev) => prev.filter((inspection) => inspection.id !== inspectionId));
+              // Force reload from server to ensure we have the latest data
+              await loadInspections(true);
+              // Re-enable sync after a short delay
+              setTimeout(() => {
+                isDeletingRef.current = false;
+              }, 100);
             } else {
+              // If deletion failed, reload to restore the correct state
+              isDeletingRef.current = false;
+              await loadInspections(true);
               Alert.alert('Error', result.error || 'Failed to delete inspection');
             }
           },
@@ -196,6 +254,7 @@ const HiveDetailsScreen = ({ route, navigation }) => {
                     index === inspections.length - 1 && styles.inspectionCardLast
                   ]}
                   activeOpacity={0.8}
+                  onPress={() => navigation.navigate('InspectionDetails', { inspection: item })}
                 >
                   <View style={styles.inspectionCardHeader}>
                     <View style={styles.inspectionDateContainer}>
@@ -251,6 +310,26 @@ const HiveDetailsScreen = ({ route, navigation }) => {
                         </View>
                         <Text style={styles.detailValue} numberOfLines={1}>
                           {item.diseases && item.diseases !== 'None' ? item.diseases : 'None'}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <View style={[styles.detailItem, { marginRight: 12 }]}>
+                        <View style={styles.detailItemHeader}>
+                          <Ionicons name="grid-outline" size={14} color="#6C757D" />
+                          <Text style={styles.detailLabel}>Brood Frames</Text>
+                        </View>
+                        <Text style={styles.detailValue}>
+                          {item.broodFrames !== null && item.broodFrames !== undefined ? item.broodFrames : 'N/A'}
+                        </Text>
+                      </View>
+                      <View style={styles.detailItem}>
+                        <View style={styles.detailItemHeader}>
+                          <Ionicons name="flower" size={14} color="#6C757D" />
+                          <Text style={styles.detailLabel}>Honey Frames</Text>
+                        </View>
+                        <Text style={styles.detailValue}>
+                          {item.honeyFrames !== null && item.honeyFrames !== undefined ? item.honeyFrames : 'N/A'}
                         </Text>
                       </View>
                     </View>

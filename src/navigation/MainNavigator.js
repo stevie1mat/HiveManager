@@ -1,12 +1,14 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { TouchableOpacity, Text } from 'react-native';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import { TouchableOpacity, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { FONTS } from '../constants/fonts';
 import DashboardScreen from '../screens/main/DashboardScreen';
 import HiveDetailsScreen from '../screens/main/HiveDetailsScreen';
 import NewInspectionScreen from '../screens/main/NewInspectionScreen';
+import InspectionDetailsScreen from '../screens/main/InspectionDetailsScreen';
 import HoneyProductionScreen from '../screens/main/HoneyProductionScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
 import AddHiveScreen from '../screens/main/AddHiveScreen';
@@ -124,8 +126,45 @@ const HiveStack = ({ navigation }) => {
       <Stack.Screen
         name="NewInspection"
         component={NewInspectionScreen}
+        options={({ navigation, route }) => {
+          const formatDate = () => {
+            const date = new Date();
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${months[date.getMonth()]} ${date.getDate()}`;
+          };
+
+          return {
+            title: 'New Inspection',
+            headerTitleAlign: 'center',
+            headerTintColor: '#000000',
+            headerBackTitleVisible: false,
+            headerLeft: () => (
+              <TouchableOpacity
+                style={{
+                  marginLeft: 16,
+                  padding: 4,
+                }}
+                onPress={() => navigation.goBack()}
+              >
+                <Ionicons name="chevron-back" size={20} color="#000000" />
+              </TouchableOpacity>
+            ),
+            headerRight: () => (
+              <View style={{ marginRight: 16 }}>
+                <Text style={{ color: '#9c8749', fontSize: 16, fontWeight: '600' }}>
+                  {formatDate()}
+                </Text>
+              </View>
+            ),
+          };
+        }}
+      />
+      <Stack.Screen
+        name="InspectionDetails"
+        component={InspectionDetailsScreen}
         options={({ navigation }) => ({
-          title: 'New Inspection',
+          title: 'Inspection Details',
+          headerTitleAlign: 'left',
           headerTintColor: '#000000',
           headerBackTitleVisible: false,
           headerLeft: () => (
@@ -137,19 +176,6 @@ const HiveStack = ({ navigation }) => {
               onPress={() => navigation.goBack()}
             >
               <Ionicons name="chevron-back" size={20} color="#000000" />
-            </TouchableOpacity>
-          ),
-          headerRight: () => (
-            <TouchableOpacity
-              style={{
-                marginRight: 16,
-                padding: 4,
-              }}
-              onPress={() => {
-                // Add notes action - can be customized
-              }}
-            >
-              <Ionicons name="document-text-outline" size={24} color="#000000" />
             </TouchableOpacity>
           ),
         })}
@@ -181,52 +207,59 @@ const HiveStack = ({ navigation }) => {
 const MainNavigator = () => {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
+      screenOptions={({ route }) => {
+        const routeName = getFocusedRouteNameFromRoute(route) ?? 'Dashboard';
+        const hideTabBar = routeName === 'NewInspection' || routeName === 'AddHive';
 
-          if (route.name === 'Hives') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Honey') {
-            iconName = focused ? 'flower' : 'flower-outline';
-          } else if (route.name === 'Settings') {
-            iconName = focused ? 'settings' : 'settings-outline';
-          }
+        return {
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
 
-          return <Ionicons name={iconName} size={focused ? 20 : 18} color={color} />;
-        },
-        tabBarActiveTintColor: '#FFC107',
-        tabBarInactiveTintColor: '#6C757D',
-        headerShown: false,
-        tabBarStyle: {
-          position: 'absolute',
-          bottom: 30,
-          left: 16,
-          right: 16,
-          height: 64,
-          backgroundColor: '#FFFFFF',
-          borderRadius: 100,
-          borderTopWidth: 0,
-          paddingBottom: 8,
-          paddingTop: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.15,
-          shadowRadius: 12,
-          elevation: 8,
-          borderWidth: 1,
-          borderColor: '#E9ECEF',
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontFamily: FONTS.bodyMedium,
-          fontWeight: '500',
-          marginTop: 4,
-        },
-        tabBarItemStyle: {
-          paddingVertical: 4,
-        },
-      })}
+            if (route.name === 'Hives') {
+              iconName = focused ? 'home' : 'home-outline';
+            } else if (route.name === 'Honey') {
+              iconName = focused ? 'flower' : 'flower-outline';
+            } else if (route.name === 'Settings') {
+              iconName = focused ? 'settings' : 'settings-outline';
+            }
+
+            return <Ionicons name={iconName} size={focused ? 20 : 18} color={color} />;
+          },
+          tabBarActiveTintColor: '#FFC107',
+          tabBarInactiveTintColor: '#6C757D',
+          headerShown: false,
+          tabBarStyle: hideTabBar
+            ? { display: 'none' }
+            : {
+                position: 'absolute',
+                bottom: 30,
+                left: 16,
+                right: 16,
+                height: 64,
+                backgroundColor: '#FFFFFF',
+                borderRadius: 100,
+                borderTopWidth: 0,
+                paddingBottom: 8,
+                paddingTop: 8,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.15,
+                shadowRadius: 12,
+                elevation: 8,
+                borderWidth: 1,
+                borderColor: '#E9ECEF',
+              },
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontFamily: FONTS.bodyMedium,
+            fontWeight: '500',
+            marginTop: 4,
+          },
+          tabBarItemStyle: {
+            paddingVertical: 4,
+          },
+        };
+      }}
     >
       <Tab.Screen name="Hives" component={HiveStack} />
       <Tab.Screen

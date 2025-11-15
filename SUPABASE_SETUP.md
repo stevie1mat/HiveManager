@@ -98,6 +98,8 @@ CREATE TABLE inspections (
   temperament text,
   swarm_cells text,
   diseases text,
+  brood_frames integer,
+  honey_frames integer,
   notes text,
   created_at timestamptz DEFAULT now()
 );
@@ -119,6 +121,16 @@ CREATE POLICY "Users can view own inspections"
 CREATE POLICY "Users can insert own inspections"
   ON inspections FOR INSERT
   WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM hives
+      WHERE hives.id = inspections.hive_id
+      AND hives.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can delete own inspections"
+  ON inspections FOR DELETE
+  USING (
     EXISTS (
       SELECT 1 FROM hives
       WHERE hives.id = inspections.hive_id
