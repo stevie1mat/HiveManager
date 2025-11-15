@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,18 +6,37 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useHive } from '../../context/HiveContext';
+import { useAuth } from '../../context/AuthContext';
+import { FONTS } from '../../constants/fonts';
 
 const DashboardScreen = ({ navigation }) => {
-  const { hives, loading, getHiveInspections } = useHive();
+  const { hives, loading, getHiveInspections, refreshHives } = useHive();
+  const { user, resendConfirmationEmail } = useAuth();
   const [refreshing, setRefreshing] = React.useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
-  }, []);
+    if (refreshHives) {
+      await refreshHives();
+    }
+    setRefreshing(false);
+  }, [refreshHives]);
+
+  const handleResendEmail = async () => {
+    setResendingEmail(true);
+    const result = await resendConfirmationEmail();
+    setResendingEmail(false);
+    if (result.success) {
+      Alert.alert('Success', 'Confirmation email sent! Please check your inbox.');
+    } else {
+      Alert.alert('Error', result.error || 'Failed to resend confirmation email');
+    }
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Never';
@@ -53,7 +72,7 @@ const DashboardScreen = ({ navigation }) => {
   const renderHiveItem = ({ item }) => {
     const queenStatus = getQueenStatusIcon(item.queenStatus);
     const strengthColor = getStrengthColor(item.strength);
-    const lastInspection = getHiveInspections(item.id)[0];
+    // Note: getHiveInspections is async, but for display purposes we'll show lastInspectionDate from item
 
     return (
       <TouchableOpacity
@@ -104,6 +123,29 @@ const DashboardScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
+      {user && !user.emailConfirmed && (
+        <View style={styles.emailBanner}>
+          <View style={styles.bannerContent}>
+            <Ionicons name="mail-outline" size={20} color="#FFA500" />
+            <View style={styles.bannerTextContainer}>
+              <Text style={styles.bannerTitle}>Please confirm your email</Text>
+              <Text style={styles.bannerText}>
+                We sent a confirmation email to {user.email}. Please check your inbox.
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.resendButton}
+            onPress={handleResendEmail}
+            disabled={resendingEmail}
+          >
+            <Text style={styles.resendButtonText}>
+              {resendingEmail ? 'Sending...' : 'Resend Email'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {hives.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="home-outline" size={80} color="#CCC" />
@@ -136,6 +178,47 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
+  emailBanner: {
+    backgroundColor: '#FFF3E0',
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFE0B2',
+    padding: 16,
+  },
+  bannerContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  bannerTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  bannerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
+    color: '#E65100',
+    marginBottom: 4,
+  },
+  bannerText: {
+    fontSize: 14,
+    fontFamily: FONTS.body,
+    color: '#BF360C',
+    lineHeight: 20,
+  },
+  resendButton: {
+    backgroundColor: '#FFA500',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  resendButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -148,6 +231,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     color: '#333',
   },
   addButton: {
@@ -180,6 +264,7 @@ const styles = StyleSheet.create({
   hiveId: {
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     color: '#333',
     marginLeft: 8,
   },
@@ -199,6 +284,7 @@ const styles = StyleSheet.create({
   strengthText: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
     textTransform: 'capitalize',
   },
   hiveInfo: {
@@ -211,6 +297,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
+    fontFamily: FONTS.body,
     color: '#666',
     marginLeft: 8,
   },
@@ -223,12 +310,14 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     color: '#999',
     marginTop: 20,
     marginBottom: 10,
   },
   emptySubtext: {
     fontSize: 16,
+    fontFamily: FONTS.body,
     color: '#999',
     textAlign: 'center',
     marginBottom: 30,
@@ -243,6 +332,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
   },
 });
 

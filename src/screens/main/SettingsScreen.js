@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useHive } from '../../context/HiveContext';
+import { FONTS } from '../../constants/fonts';
 
 const SettingsScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
@@ -134,16 +135,19 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 32,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     color: '#FFFFFF',
   },
   name: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     color: '#333',
     marginBottom: 5,
   },
   email: {
     fontSize: 16,
+    fontFamily: FONTS.body,
     color: '#666',
   },
   section: {
@@ -154,6 +158,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
     color: '#999',
     textTransform: 'uppercase',
     paddingHorizontal: 20,
@@ -179,11 +184,13 @@ const styles = StyleSheet.create({
   },
   settingTitle: {
     fontSize: 16,
+    fontFamily: FONTS.body,
     color: '#333',
     marginBottom: 2,
   },
   settingSubtitle: {
     fontSize: 14,
+    fontFamily: FONTS.body,
     color: '#999',
   },
   logoutButton: {
@@ -201,6 +208,7 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
     color: '#F44336',
     marginLeft: 10,
   },
@@ -210,6 +218,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
+    fontFamily: FONTS.body,
     color: '#999',
   },
 });

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../config/supabase';
 
 const AuthContext = createContext({});
 
@@ -16,17 +16,92 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadUser();
+    let mounted = true;
+    
+    // Check initial session first
+    const initializeAuth = async () => {
+      // First, check for existing session
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (mounted) {
+        if (error) {
+          console.error('Error getting session:', error);
+          setUser(null);
+          setLoading(false);
+        } else if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            emailConfirmed: !!session.user.email_confirmed_at || !!session.user.confirmed_at,
+            firstName: session.user.user_metadata?.firstName,
+            lastName: session.user.user_metadata?.lastName,
+            displayName: session.user.user_metadata?.displayName || 
+              `${session.user.user_metadata?.firstName || ''} ${session.user.user_metadata?.lastName || ''}`.trim(),
+          });
+          setLoading(false);
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
+      }
+    };
+    
+    initializeAuth();
+    
+    // Then set up listener for auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          emailConfirmed: !!session.user.email_confirmed_at || !!session.user.confirmed_at,
+          firstName: session.user.user_metadata?.firstName,
+          lastName: session.user.user_metadata?.lastName,
+          displayName: session.user.user_metadata?.displayName || 
+            `${session.user.user_metadata?.firstName || ''} ${session.user.user_metadata?.lastName || ''}`.trim(),
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const loadUser = async () => {
+  const checkSession = async () => {
     try {
-      const userData = await AsyncStorage.getItem('user');
-      if (userData) {
-        setUser(JSON.parse(userData));
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error getting session:', error);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          emailConfirmed: !!session.user.email_confirmed_at || !!session.user.confirmed_at,
+          firstName: session.user.user_metadata?.firstName,
+          lastName: session.user.user_metadata?.lastName,
+          displayName: session.user.user_metadata?.displayName || 
+            `${session.user.user_metadata?.firstName || ''} ${session.user.user_metadata?.lastName || ''}`.trim(),
+        });
+      } else {
+        setUser(null);
       }
     } catch (error) {
-      console.error('Error loading user:', error);
+      console.error('Error checking session:', error);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -34,87 +109,133 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // In a real app, this would be an API call
-      // For now, we'll use mock authentication
-      const users = await AsyncStorage.getItem('users');
-      const usersList = users ? JSON.parse(users) : [];
-      
-      const foundUser = usersList.find(
-        u => u.email === email && u.password === password
-      );
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (foundUser) {
-        const userData = {
-          id: foundUser.id,
-          firstName: foundUser.firstName,
-          lastName: foundUser.lastName,
-          email: foundUser.email,
-        };
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-        return { success: true };
-      } else {
-        return { success: false, error: 'Invalid email or password' };
+      if (error) {
+        return { success: false, error: error.message };
       }
+
+      if (data?.user || data?.session) {
+        // Get the latest session to ensure we have the most up-to-date user data
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const user = session.user;
+          // Check if email is confirmed
+          // email_confirmed_at is the primary field, confirmed_at is an alias
+          // If both are null/undefined, email is not confirmed
+          const emailConfirmed = !!(user.email_confirmed_at || user.confirmed_at);
+          
+          setUser({
+            id: user.id,
+            email: user.email,
+            emailConfirmed: emailConfirmed,
+            firstName: user.user_metadata?.firstName,
+            lastName: user.user_metadata?.lastName,
+            displayName: user.user_metadata?.displayName || 
+              `${user.user_metadata?.firstName || ''} ${user.user_metadata?.lastName || ''}`.trim(),
+          });
+        } else if (data?.user) {
+          // Fallback to data.user if session is not available
+          const user = data.user;
+          const emailConfirmed = !!(user.email_confirmed_at || user.confirmed_at);
+          
+          setUser({
+            id: user.id,
+            email: user.email,
+            emailConfirmed: emailConfirmed,
+            firstName: user.user_metadata?.firstName,
+            lastName: user.user_metadata?.lastName,
+            displayName: user.user_metadata?.displayName || 
+              `${user.user_metadata?.firstName || ''} ${user.user_metadata?.lastName || ''}`.trim(),
+          });
+        }
+        return { success: true };
+      }
+
+      return { success: false, error: 'Login failed' };
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false, error: 'An error occurred during login' };
+      return { success: false, error: error.message || 'An error occurred during login' };
     }
   };
 
   const register = async (firstName, lastName, email, password) => {
     try {
-      const users = await AsyncStorage.getItem('users');
-      const usersList = users ? JSON.parse(users) : [];
-      
-      // Check if user already exists
-      if (usersList.find(u => u.email === email)) {
-        return { success: false, error: 'Email already registered' };
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            firstName,
+            lastName,
+            displayName: `${firstName} ${lastName}`,
+          },
+        },
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
       }
 
-      const newUser = {
-        id: Date.now().toString(),
-        firstName,
-        lastName,
-        email,
-        password, // In production, this should be hashed
-      };
+      if (data?.user) {
+        setUser({
+          id: data.user.id,
+          email: data.user.email,
+          emailConfirmed: !!data.user.email_confirmed_at,
+          firstName: data.user.user_metadata?.firstName,
+          lastName: data.user.user_metadata?.lastName,
+          displayName: data.user.user_metadata?.displayName || `${firstName} ${lastName}`,
+        });
+        return { success: true };
+      }
 
-      usersList.push(newUser);
-      await AsyncStorage.setItem('users', JSON.stringify(usersList));
-
-      const userData = {
-        id: newUser.id,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        email: newUser.email,
-      };
-      await AsyncStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      return { success: true };
+      return { success: false, error: 'Registration failed' };
     } catch (error) {
       console.error('Registration error:', error);
-      return { success: false, error: 'An error occurred during registration' };
+      return { success: false, error: error.message || 'An error occurred during registration' };
     }
   };
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('user');
+      await supabase.auth.signOut();
       setUser(null);
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
 
+  const resendConfirmationEmail = async () => {
+    try {
+      if (!user?.email) {
+        return { success: false, error: 'No email address found' };
+      }
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: user.email,
+      });
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Error resending confirmation email:', error);
+      return { success: false, error: error.message || 'Failed to resend confirmation email' };
+    }
+  };
+
   const value = {
     user,
     loading,
+    isAuthenticated: !!user,
     login,
     register,
     logout,
+    resendConfirmationEmail,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-

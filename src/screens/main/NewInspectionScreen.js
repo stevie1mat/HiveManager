@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useHive } from '../../context/HiveContext';
+import { FONTS } from '../../constants/fonts';
 
 const NewInspectionScreen = ({ route, navigation }) => {
   const { hiveId } = route.params;
@@ -234,6 +235,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
     color: '#333',
     marginBottom: 10,
   },
@@ -252,6 +254,7 @@ const styles = StyleSheet.create({
   dateInput: {
     flex: 1,
     fontSize: 16,
+    fontFamily: FONTS.body,
     color: '#333',
   },
   optionsContainer: {
@@ -274,17 +277,20 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 14,
+    fontFamily: FONTS.body,
     color: '#666',
   },
   optionTextSelected: {
     color: '#FFFFFF',
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
   },
   textInput: {
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 15,
     fontSize: 16,
+    fontFamily: FONTS.body,
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
@@ -306,6 +312,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
   },
 });
 

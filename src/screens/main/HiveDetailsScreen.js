@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,30 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useHive } from '../../context/HiveContext';
+import { FONTS } from '../../constants/fonts';
 
 const HiveDetailsScreen = ({ route, navigation }) => {
   const { hiveId } = route.params;
   const { hives, getHiveInspections } = useHive();
+  const [inspections, setInspections] = useState([]);
+  const [loadingInspections, setLoadingInspections] = useState(true);
   const hive = hives.find((h) => h.id === hiveId);
-  const inspections = getHiveInspections(hiveId);
+
+  useEffect(() => {
+    const loadInspections = async () => {
+      if (hiveId) {
+        setLoadingInspections(true);
+        const data = await getHiveInspections(hiveId);
+        setInspections(data || []);
+        setLoadingInspections(false);
+      }
+    };
+    loadInspections();
+  }, [hiveId, getHiveInspections]);
 
   if (!hive) {
     return (
@@ -139,7 +154,11 @@ const HiveDetailsScreen = ({ route, navigation }) => {
           <Text style={styles.sectionCount}>({inspections.length})</Text>
         </View>
 
-        {inspections.length === 0 ? (
+        {loadingInspections ? (
+          <View style={styles.emptyInspections}>
+            <ActivityIndicator size="large" color="#FFA500" />
+          </View>
+        ) : inspections.length === 0 ? (
           <View style={styles.emptyInspections}>
             <Ionicons name="document-text-outline" size={50} color="#CCC" />
             <Text style={styles.emptyText}>No inspections yet</Text>
@@ -184,6 +203,7 @@ const styles = StyleSheet.create({
   hiveId: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     color: '#333',
     marginLeft: 10,
   },
@@ -204,6 +224,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
     textTransform: 'capitalize',
   },
   infoSection: {
@@ -223,12 +244,14 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
+    fontFamily: FONTS.body,
     color: '#666',
     marginBottom: 4,
   },
   infoValue: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
     color: '#333',
   },
   section: {
@@ -243,10 +266,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     color: '#333',
   },
   sectionCount: {
     fontSize: 16,
+    fontFamily: FONTS.body,
     color: '#999',
     marginLeft: 8,
   },
@@ -265,6 +290,7 @@ const styles = StyleSheet.create({
   inspectionDate: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
     color: '#333',
   },
   healthBadge: {
@@ -283,9 +309,11 @@ const styles = StyleSheet.create({
   healthText: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
   },
   inspectionNotes: {
     fontSize: 14,
+    fontFamily: FONTS.body,
     color: '#666',
     marginTop: 8,
   },
@@ -297,6 +325,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+    fontFamily: FONTS.body,
     color: '#999',
     marginTop: 15,
   },
@@ -313,10 +342,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     marginLeft: 8,
   },
   errorText: {
     fontSize: 18,
+    fontFamily: FONTS.body,
     color: '#F44336',
     textAlign: 'center',
     marginTop: 50,

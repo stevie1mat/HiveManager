@@ -44,9 +44,11 @@ A React Native application for beehive management that helps beekeepers track th
 - **React Native** with Expo
 - **React Navigation** for navigation
 - **Context API** for state management
-- **AsyncStorage** for data persistence
+- **Supabase** for backend (authentication, database, real-time)
 - **Expo Linear Gradient** for beautiful UI gradients
 - **Expo Vector Icons** for icons
+- **Urbanist** font for headings
+- **IBM Plex Sans** font for body text
 
 ## Installation
 
@@ -75,6 +77,10 @@ npm run android
 ```
 ├── App.js                 # Main app entry point
 ├── src/
+│   ├── config/           # Configuration files
+│   │   └── supabase.js  # Supabase client configuration
+│   ├── constants/        # Constants and utilities
+│   │   └── fonts.js     # Font family constants
 │   ├── context/          # Context providers for state management
 │   │   ├── AuthContext.js
 │   │   └── HiveContext.js
@@ -99,11 +105,13 @@ npm run android
 
 ## Data Persistence
 
-The app uses AsyncStorage to persist data locally:
-- User authentication data
-- Hive information
-- Inspection records
-- Honey harvest logs
+The app uses Supabase for data persistence:
+- User authentication (managed by Supabase Auth)
+- Hive information (stored in Supabase database)
+- Inspection records (stored in Supabase database)
+- Honey harvest logs (stored in Supabase database)
+
+All data is synced with Supabase backend and accessible across devices.
 
 ## Form Validation
 
@@ -127,10 +135,11 @@ All forms include basic validation:
 
 ## Notes
 
-- The app currently uses mock authentication (stored locally)
+- The app uses Supabase for authentication and data storage
 - Google login buttons are placeholders and would need OAuth implementation
 - Date pickers use text input format (YYYY-MM-DD) - can be enhanced with native date pickers
-- All data is stored locally using AsyncStorage
+- All data is stored in Supabase PostgreSQL database with Row Level Security
+- See `SUPABASE_SETUP.md` for database setup instructions
 
 ## License
 

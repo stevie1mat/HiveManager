@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useHive } from '../../context/HiveContext';
+import { FONTS } from '../../constants/fonts';
 
 const HoneyProductionScreen = ({ navigation }) => {
   const { hives, harvests, addHarvest } = useHive();
@@ -20,7 +21,9 @@ const HoneyProductionScreen = ({ navigation }) => {
   const [unit, setUnit] = useState('lbs');
   const [loading, setLoading] = useState(false);
 
-  const recentHarvests = harvests
+  // Flatten harvests object into array
+  const allHarvests = Object.values(harvests).flat();
+  const recentHarvests = allHarvests
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 10);
 
@@ -216,6 +219,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     color: '#333',
     marginBottom: 20,
   },
@@ -225,6 +229,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
     color: '#333',
     marginBottom: 10,
   },
@@ -236,6 +241,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
+    fontFamily: FONTS.body,
     color: '#999',
     marginBottom: 15,
   },
@@ -249,6 +255,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
   },
   hiveOption: {
     backgroundColor: '#F5F5F5',
@@ -265,6 +272,7 @@ const styles = StyleSheet.create({
   },
   hiveOptionText: {
     fontSize: 14,
+    fontFamily: FONTS.body,
     color: '#666',
     fontWeight: '600',
   },
@@ -276,6 +284,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     fontSize: 16,
+    fontFamily: FONTS.body,
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
@@ -304,6 +313,7 @@ const styles = StyleSheet.create({
   },
   unitText: {
     fontSize: 16,
+    fontFamily: FONTS.body,
     color: '#666',
     fontWeight: '600',
   },
@@ -324,6 +334,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
   },
   historySection: {
     padding: 20,
@@ -348,15 +359,18 @@ const styles = StyleSheet.create({
   harvestHive: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: FONTS.bodyBold,
     color: '#333',
   },
   harvestDate: {
     fontSize: 14,
+    fontFamily: FONTS.body,
     color: '#666',
   },
   harvestQuantity: {
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     color: '#FFA500',
   },
 });

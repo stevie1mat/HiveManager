@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import { FONTS } from '../../constants/fonts';
 
 const SplashScreen = () => {
   const navigation = useNavigation();
@@ -64,11 +65,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
+    fontFamily: FONTS.heading,
     color: '#FFFFFF',
     marginBottom: 10,
   },
   tagline: {
     fontSize: 18,
+    fontFamily: FONTS.body,
     color: '#FFFFFF',
     opacity: 0.9,
   },
