@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useHive } from '../../context/HiveContext';
@@ -13,7 +14,7 @@ import { FONTS } from '../../constants/fonts';
 
 const HiveDetailsScreen = ({ route, navigation }) => {
   const { hiveId } = route.params;
-  const { hives, getHiveInspections } = useHive();
+  const { hives, getHiveInspections, deleteInspection } = useHive();
   const [inspections, setInspections] = useState([]);
   const [loadingInspections, setLoadingInspections] = useState(true);
   const [activeTab, setActiveTab] = useState('Inspections');
@@ -23,13 +24,19 @@ const HiveDetailsScreen = ({ route, navigation }) => {
     const loadInspections = async () => {
       if (hiveId) {
         setLoadingInspections(true);
-        const data = await getHiveInspections(hiveId);
-        setInspections(data || []);
-        setLoadingInspections(false);
+        try {
+          const data = await getHiveInspections(hiveId);
+          setInspections(Array.isArray(data) ? data : []);
+        } catch (error) {
+          console.error('Error loading inspections:', error);
+          setInspections([]);
+        } finally {
+          setLoadingInspections(false);
+        }
       }
     };
     loadInspections();
-  }, [hiveId, getHiveInspections]);
+  }, [hiveId]);
 
   if (!hive) {
     return (
@@ -84,6 +91,29 @@ const HiveDetailsScreen = ({ route, navigation }) => {
 
   const status = getHiveStatus();
   const hiveDisplayId = hive.hiveId || `Hive ${hive.id.slice(-6)}`;
+
+  const handleDeleteInspection = async (inspectionId) => {
+    Alert.alert(
+      'Delete Inspection',
+      'Are you sure you want to delete this inspection? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const result = await deleteInspection(inspectionId, hiveId);
+            if (result.success) {
+              // Update local state by removing the deleted inspection
+              setInspections((prev) => prev.filter((inspection) => inspection.id !== inspectionId));
+            } else {
+              Alert.alert('Error', result.error || 'Failed to delete inspection');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -172,11 +202,20 @@ const HiveDetailsScreen = ({ route, navigation }) => {
                       <Ionicons name="calendar-outline" size={16} color="#6C757D" style={styles.inspectionIcon} />
                       <Text style={styles.inspectionDate}>{formatDate(item.date)}</Text>
                     </View>
-                    <View style={[styles.healthBadge, { backgroundColor: getHealthStatusColor(item.generalHealth) + '20' }]}>
-                      <View style={[styles.healthDot, { backgroundColor: getHealthStatusColor(item.generalHealth) }]} />
-                      <Text style={[styles.healthText, { color: getHealthStatusColor(item.generalHealth) }]}>
-                        {item.generalHealth || 'Unknown'}
-                      </Text>
+                    <View style={styles.headerRight}>
+                      <View style={[styles.healthBadge, { backgroundColor: getHealthStatusColor(item.generalHealth) + '20' }]}>
+                        <View style={[styles.healthDot, { backgroundColor: getHealthStatusColor(item.generalHealth) }]} />
+                        <Text style={[styles.healthText, { color: getHealthStatusColor(item.generalHealth) }]}>
+                          {item.generalHealth || 'Unknown'}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => handleDeleteInspection(item.id)}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <Ionicons name="close-circle" size={20} color="#DC3545" />
+                      </TouchableOpacity>
                     </View>
                   </View>
 
@@ -394,6 +433,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  deleteButton: {
+    padding: 4,
+    marginLeft: 8,
   },
   inspectionDateContainer: {
     flexDirection: 'row',

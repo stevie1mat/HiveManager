@@ -369,6 +369,36 @@ export const HiveProvider = ({ children }) => {
     }
   };
 
+  const deleteInspection = async (inspectionId, hiveId) => {
+    try {
+      const { error } = await supabase
+        .from('inspections')
+        .delete()
+        .eq('id', inspectionId);
+
+      if (error) {
+        console.error('Error deleting inspection:', error);
+        return { success: false, error: error.message || 'Failed to delete inspection' };
+      }
+
+      // Remove from local state
+      setInspections((prev) => {
+        const newInspections = { ...prev };
+        if (newInspections[hiveId]) {
+          newInspections[hiveId] = newInspections[hiveId].filter(
+            (inspection) => inspection.id !== inspectionId
+          );
+        }
+        return newInspections;
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting inspection:', error);
+      return { success: false, error: error.message || 'Failed to delete inspection' };
+    }
+  };
+
   const getHiveInspections = async (hiveId) => {
     // Check if already loaded
     if (inspections[hiveId]) {
@@ -396,6 +426,7 @@ export const HiveProvider = ({ children }) => {
     updateHive,
     deleteHive,
     addInspection,
+    deleteInspection,
     addHarvest,
     getHiveInspections,
     getHiveHarvests,
