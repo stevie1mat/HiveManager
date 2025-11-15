@@ -304,6 +304,7 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: 'center',
     marginTop: 20,
+    marginBottom: 110,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -311,7 +312,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontFamily: FONTS.heading,
   },
 });

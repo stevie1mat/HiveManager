@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  FlatList,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +16,7 @@ const HiveDetailsScreen = ({ route, navigation }) => {
   const { hives, getHiveInspections } = useHive();
   const [inspections, setInspections] = useState([]);
   const [loadingInspections, setLoadingInspections] = useState(true);
+  const [activeTab, setActiveTab] = useState('Inspections');
   const hive = hives.find((h) => h.id === hiveId);
 
   useEffect(() => {
@@ -49,249 +49,365 @@ const HiveDetailsScreen = ({ route, navigation }) => {
     });
   };
 
+  const getHiveStatus = () => {
+    const strength = hive.strength?.toLowerCase();
+    const queenStatus = hive.queenStatus?.toLowerCase();
+    
+    if (strength === 'strong' && (queenStatus === 'present' || queenStatus === 'present & strong')) {
+      return { label: 'Healthy', color: '#28A745', bgColor: '#28A745' };
+    }
+    if (strength === 'moderate' || queenStatus === 'unknown') {
+      return { label: 'Monitor', color: '#FD7E14', bgColor: '#FD7E14' };
+    }
+    if (strength === 'weak' || queenStatus === 'absent' || queenStatus === 'missing') {
+      return { label: 'Needs Attention', color: '#DC3545', bgColor: '#DC3545' };
+    }
+    return { label: 'Monitor', color: '#FD7E14', bgColor: '#FD7E14' };
+  };
+
   const getHealthStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'strong':
       case 'good':
       case 'present & strong':
-        return '#4CAF50';
+        return '#28A745';
       case 'moderate':
       case 'fair':
-        return '#FF9800';
+        return '#FD7E14';
       case 'weak':
       case 'poor':
-        return '#F44336';
+        return '#DC3545';
       default:
-        return '#999';
+        return '#6C757D';
     }
   };
 
-  const renderInspectionItem = ({ item }) => {
-    const healthColor = getHealthStatusColor(item.generalHealth);
-    return (
-      <View style={styles.inspectionCard}>
-        <View style={styles.inspectionHeader}>
-          <Text style={styles.inspectionDate}>{formatDate(item.date)}</Text>
-          <View style={[styles.healthBadge, { backgroundColor: healthColor + '20' }]}>
-            <View style={[styles.healthDot, { backgroundColor: healthColor }]} />
-            <Text style={[styles.healthText, { color: healthColor }]}>
-              {item.generalHealth || 'Unknown'}
-            </Text>
-          </View>
-        </View>
-        {item.notes && (
-          <Text style={styles.inspectionNotes} numberOfLines={2}>
-            {item.notes}
-          </Text>
-        )}
-      </View>
-    );
-  };
+  const status = getHiveStatus();
+  const hiveDisplayId = hive.hiveId || `Hive ${hive.id.slice(-6)}`;
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.hiveIdSection}>
-          <Ionicons name="home" size={24} color="#FFA500" />
-          <Text style={styles.hiveId}>Hive #{hive.id.slice(-6)}</Text>
-        </View>
-        <View
-          style={[
-            styles.statusBadge,
-            { backgroundColor: getHealthStatusColor(hive.strength) + '20' },
-          ]}
-        >
-          <View
-            style={[
-              styles.statusDot,
-              { backgroundColor: getHealthStatusColor(hive.strength) },
-            ]}
-          />
-          <Text
-            style={[
-              styles.statusText,
-              { color: getHealthStatusColor(hive.strength) },
-            ]}
-          >
-            {hive.strength || 'Unknown'}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.infoSection}>
-        <View style={styles.infoCard}>
-          <Ionicons name="information-circle-outline" size={20} color="#666" />
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Health Status</Text>
-            <Text style={styles.infoValue}>
-              {hive.strength ? `${hive.strength} - Present & Strong` : 'Unknown'}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.infoCard}>
-          <Ionicons name="flower-outline" size={20} color="#666" />
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Queen Status</Text>
-            <Text style={styles.infoValue}>{hive.queenStatus || 'Unknown'}</Text>
-          </View>
-        </View>
-
-        <View style={styles.infoCard}>
-          <Ionicons name="calendar-outline" size={20} color="#666" />
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Last Inspection</Text>
-            <Text style={styles.infoValue}>
-              {formatDate(hive.lastInspectionDate)}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Past Inspections</Text>
-          <Text style={styles.sectionCount}>({inspections.length})</Text>
-        </View>
-
-        {loadingInspections ? (
-          <View style={styles.emptyInspections}>
-            <ActivityIndicator size="large" color="#FFA500" />
-          </View>
-        ) : inspections.length === 0 ? (
-          <View style={styles.emptyInspections}>
-            <Ionicons name="document-text-outline" size={50} color="#CCC" />
-            <Text style={styles.emptyText}>No inspections yet</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={inspections}
-            renderItem={renderInspectionItem}
-            keyExtractor={(item) => item.id}
-            scrollEnabled={false}
-          />
-        )}
-      </View>
-
-      <TouchableOpacity
-        style={styles.inspectButton}
-        onPress={() => navigation.navigate('NewInspection', { hiveId })}
+    <View style={styles.container}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        <Ionicons name="add-circle" size={24} color="#FFFFFF" />
-        <Text style={styles.inspectButtonText}>Start Inspection</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Hive Info Card */}
+        <View style={styles.hiveCard}>
+          <View style={styles.hiveCardHeader}>
+            <View style={styles.hiveCardTitleContainer}>
+              <Text style={styles.hiveCardTitle}>{hiveDisplayId}</Text>
+              <View style={styles.statusContainer}>
+                <View style={[styles.statusDot, { backgroundColor: status.bgColor }]} />
+                <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.metricsGrid}>
+            <View style={styles.metricItem}>
+              <View style={styles.metricIconContainer}>
+                <Ionicons name="female" size={18} color="#6C757D" />
+              </View>
+              <Text style={styles.metricLabel}>Queen</Text>
+              <Text style={styles.metricValue}>
+                {hive.queenStatus === 'Present' || hive.queenStatus === 'Present & Strong' 
+                  ? 'Laying' 
+                  : hive.queenStatus || 'Unknown'}
+              </Text>
+            </View>
+            <View style={styles.metricItem}>
+              <View style={styles.metricIconContainer}>
+                <Ionicons name="thermometer" size={18} color="#6C757D" />
+              </View>
+              <Text style={styles.metricLabel}>Strength</Text>
+              <Text style={styles.metricValue}>{hive.strength || 'Unknown'}</Text>
+            </View>
+            <View style={styles.metricItem}>
+              <View style={styles.metricIconContainer}>
+                <Ionicons name="bug" size={18} color="#6C757D" />
+              </View>
+              <Text style={styles.metricLabel}>Health</Text>
+              <Text style={styles.metricValue}>{hive.strength || 'Unknown'}</Text>
+            </View>
+          </View>
+
+          <View style={styles.hiveCardFooter}>
+            <Ionicons name="calendar-outline" size={14} color="#6C757D" style={styles.footerIcon} />
+            <Text style={styles.lastInspectionText}>
+              Last Inspection: {formatDate(hive.lastInspectionDate)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Inspections Section */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Past Inspections</Text>
+            <Text style={styles.sectionCount}>({inspections.length})</Text>
+          </View>
+
+          {loadingInspections ? (
+            <View style={styles.emptyState}>
+              <ActivityIndicator size="large" color="#FFC107" />
+            </View>
+          ) : inspections.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="document-text-outline" size={50} color="#DEE2E6" />
+              <Text style={styles.emptyText}>No inspections yet</Text>
+            </View>
+          ) : (
+            <View style={styles.inspectionsList}>
+              {inspections.map((item, index) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[
+                    styles.inspectionCard,
+                    index === inspections.length - 1 && styles.inspectionCardLast
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.inspectionCardHeader}>
+                    <View style={styles.inspectionDateContainer}>
+                      <Ionicons name="calendar-outline" size={16} color="#6C757D" style={styles.inspectionIcon} />
+                      <Text style={styles.inspectionDate}>{formatDate(item.date)}</Text>
+                    </View>
+                    <View style={[styles.healthBadge, { backgroundColor: getHealthStatusColor(item.generalHealth) + '20' }]}>
+                      <View style={[styles.healthDot, { backgroundColor: getHealthStatusColor(item.generalHealth) }]} />
+                      <Text style={[styles.healthText, { color: getHealthStatusColor(item.generalHealth) }]}>
+                        {item.generalHealth || 'Unknown'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.inspectionDetails}>
+                    <View style={styles.detailRow}>
+                      <View style={[styles.detailItem, { marginRight: 12 }]}>
+                        <View style={styles.detailItemHeader}>
+                          <Ionicons name="female" size={14} color="#6C757D" />
+                          <Text style={styles.detailLabel}>Queen</Text>
+                        </View>
+                        <Text style={styles.detailValue}>{item.queenStatus || 'Unknown'}</Text>
+                      </View>
+                      <View style={styles.detailItem}>
+                        <View style={styles.detailItemHeader}>
+                          <Ionicons name="happy-outline" size={14} color="#6C757D" />
+                          <Text style={styles.detailLabel}>Temperament</Text>
+                        </View>
+                        <Text style={styles.detailValue}>{item.temperament || 'Unknown'}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <View style={[styles.detailItem, { marginRight: 12 }]}>
+                        <View style={styles.detailItemHeader}>
+                          <Ionicons name="flower-outline" size={14} color="#6C757D" />
+                          <Text style={styles.detailLabel}>Swarm Cells</Text>
+                        </View>
+                        <Text style={styles.detailValue}>{item.swarmCells || 'Unknown'}</Text>
+                      </View>
+                      <View style={styles.detailItem}>
+                        <View style={styles.detailItemHeader}>
+                          <Ionicons name="warning-outline" size={14} color="#6C757D" />
+                          <Text style={styles.detailLabel}>Diseases</Text>
+                        </View>
+                        <Text style={styles.detailValue} numberOfLines={1}>
+                          {item.diseases && item.diseases !== 'None' ? item.diseases : 'None'}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {item.notes && (
+                    <View style={styles.notesContainer}>
+                      <Text style={styles.notesLabel}>Notes:</Text>
+                      <Text style={styles.inspectionNotes}>
+                        {item.notes}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8F9FA',
   },
-  header: {
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  hiveCard: {
     backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    overflow: 'hidden',
+    marginBottom: 16,
   },
-  hiveIdSection: {
+  hiveCardHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    padding: 18,
+    paddingBottom: 14,
   },
-  hiveId: {
-    fontSize: 24,
+  hiveCardTitleContainer: {
+    flex: 1,
+  },
+  hiveCardTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
     fontFamily: FONTS.heading,
-    color: '#333',
-    marginLeft: 10,
+    color: '#343A40',
+    letterSpacing: -0.3,
   },
-  statusBadge: {
+  statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
+    marginTop: 6,
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     marginRight: 6,
   },
   statusText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
     fontFamily: FONTS.bodyBold,
-    textTransform: 'capitalize',
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
-  infoSection: {
-    padding: 20,
-  },
-  infoCard: {
+  metricsGrid: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 12,
-    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F3F5',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
   },
-  infoContent: {
-    marginLeft: 15,
+  metricItem: {
     flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 4,
   },
-  infoLabel: {
-    fontSize: 14,
+  metricIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  metricLabel: {
+    fontSize: 11,
     fontFamily: FONTS.body,
-    color: '#666',
-    marginBottom: 4,
+    color: '#6C757D',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 4,
   },
-  infoValue: {
-    fontSize: 16,
-    fontWeight: '600',
+  metricValue: {
+    fontSize: 15,
     fontFamily: FONTS.bodyBold,
-    color: '#333',
+    fontWeight: '600',
+    color: '#343A40',
+    marginTop: 2,
   },
-  section: {
-    padding: 20,
-    paddingTop: 0,
+  hiveCardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F3F5',
+    backgroundColor: '#F8F9FA',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+  },
+  footerIcon: {
+    marginRight: 6,
+  },
+  lastInspectionText: {
+    fontSize: 12,
+    fontFamily: FONTS.body,
+    color: '#6C757D',
+  },
+  sectionContainer: {
+    marginBottom: 16,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     fontFamily: FONTS.heading,
-    color: '#333',
+    color: '#343A40',
+    marginRight: 8,
   },
   sectionCount: {
     fontSize: 16,
     fontFamily: FONTS.body,
-    color: '#999',
-    marginLeft: 8,
+    color: '#6C757D',
+  },
+  inspectionsList: {
+    marginBottom: 12,
   },
   inspectionCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 15,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    paddingTop: 18,
+    paddingHorizontal: 18,
+    paddingBottom: 12,
     marginBottom: 12,
   },
-  inspectionHeader: {
+  inspectionCardLast: {
+    marginBottom: 54,
+  },
+  inspectionCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
+  inspectionDateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  inspectionIcon: {
+    marginRight: 6,
+  },
   inspectionDate: {
     fontSize: 16,
     fontWeight: '600',
     fontFamily: FONTS.bodyBold,
-    color: '#333',
+    color: '#343A40',
   },
   healthBadge: {
     flexDirection: 'row',
@@ -311,39 +427,71 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: FONTS.bodyBold,
   },
+  inspectionDetails: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F3F5',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  detailItem: {
+    flex: 1,
+  },
+  detailItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  detailLabel: {
+    fontSize: 11,
+    fontFamily: FONTS.body,
+    color: '#6C757D',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginLeft: 4,
+  },
+  detailValue: {
+    fontSize: 14,
+    fontFamily: FONTS.bodyBold,
+    fontWeight: '600',
+    color: '#343A40',
+  },
+  notesContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F3F5',
+  },
+  notesLabel: {
+    fontSize: 11,
+    fontFamily: FONTS.bodyBold,
+    color: '#6C757D',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
   inspectionNotes: {
     fontSize: 14,
     fontFamily: FONTS.body,
-    color: '#666',
-    marginTop: 8,
+    color: '#6C757D',
+    lineHeight: 20,
   },
-  emptyInspections: {
+  emptyState: {
     alignItems: 'center',
     padding: 40,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
   },
   emptyText: {
     fontSize: 16,
     fontFamily: FONTS.body,
-    color: '#999',
+    color: '#6C757D',
     marginTop: 15,
-  },
-  inspectButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFA500',
-    margin: 20,
-    padding: 15,
-    borderRadius: 12,
-  },
-  inspectButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    fontFamily: FONTS.heading,
-    marginLeft: 8,
   },
   errorText: {
     fontSize: 18,
@@ -355,4 +503,5 @@ const styles = StyleSheet.create({
 });
 
 export default HiveDetailsScreen;
+
 

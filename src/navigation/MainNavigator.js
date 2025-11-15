@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { FONTS } from '../constants/fonts';
 import DashboardScreen from '../screens/main/DashboardScreen';
@@ -25,7 +25,6 @@ const HiveStack = ({ navigation }) => {
           headerTitleAlign: 'left',
           headerStyle: {
             height: 112,
-            paddingBottom: 8,
           },
           headerTitleStyle: {
             fontSize: 22,
@@ -77,17 +76,103 @@ const HiveStack = ({ navigation }) => {
       <Stack.Screen
         name="HiveDetails"
         component={HiveDetailsScreen}
-        options={{ title: 'Hive Details' }}
+        options={({ navigation, route }) => ({
+          title: 'Hive Details',
+          headerTitleAlign: 'left',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            height: 120,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 4,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+          headerRight: () => (
+            <TouchableOpacity
+              style={{
+                marginRight: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#FFC107',
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 8,
+              }}
+              onPress={() => {
+                const hiveId = route.params?.hiveId;
+                if (hiveId) {
+                  navigation.navigate('NewInspection', { hiveId });
+                }
+              }}
+            >
+              <Ionicons name="add" size={18} color="#343A40" style={{ marginRight: 6 }} />
+              <Text style={{ color: '#343A40', fontSize: 14, fontWeight: '600' }}>
+                New Inspection
+              </Text>
+            </TouchableOpacity>
+          ),
+        })}
       />
       <Stack.Screen
         name="NewInspection"
         component={NewInspectionScreen}
-        options={{ title: 'New Inspection' }}
+        options={({ navigation }) => ({
+          title: 'New Inspection',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 4,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+          headerRight: () => (
+            <TouchableOpacity
+              style={{
+                marginRight: 16,
+                padding: 4,
+              }}
+              onPress={() => {
+                // Add notes action - can be customized
+              }}
+            >
+              <Ionicons name="document-text-outline" size={24} color="#000000" />
+            </TouchableOpacity>
+          ),
+        })}
       />
       <Stack.Screen
         name="AddHive"
         component={AddHiveScreen}
-        options={{ title: 'Add New Hive' }}
+        options={({ navigation }) => ({
+          title: 'Add New Hive',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 10,
+                padding: 4,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+        })}
       />
     </Stack.Navigator>
   );
