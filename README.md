@@ -4,6 +4,12 @@ A React Native application for beehive management that helps beekeepers track th
 
 ![HiveManager Screenshot](assets/screenshot.png)
 
+## ☕ Support
+
+If you find this project helpful, consider supporting the development:
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/steviemathew)
+
 ## Features
 
 ### Authentication
