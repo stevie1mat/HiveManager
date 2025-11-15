@@ -14,22 +14,37 @@ import { FONTS } from '../constants/fonts';
 const Sidebar = ({ visible, onClose, navigation }) => {
   const { user, logout } = useAuth();
   const slideAnim = useRef(new Animated.Value(-280)).current;
+  const animationRef = useRef(null);
 
   useEffect(() => {
+    // Stop any running animation
+    if (animationRef.current) {
+      animationRef.current.stop();
+    }
+
     if (visible) {
-      Animated.timing(slideAnim, {
+      animationRef.current = Animated.timing(slideAnim, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
-      }).start();
+      });
+      animationRef.current.start();
     } else {
-      Animated.timing(slideAnim, {
+      animationRef.current = Animated.timing(slideAnim, {
         toValue: -280,
         duration: 300,
         useNativeDriver: true,
-      }).start();
+      });
+      animationRef.current.start();
     }
-  }, [visible, slideAnim]);
+
+    // Cleanup on unmount
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
+    };
+  }, [visible]);
 
   const handleLogout = async () => {
     await logout();

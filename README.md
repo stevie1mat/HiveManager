@@ -2,6 +2,8 @@
 
 A React Native application for beehive management that helps beekeepers track their hives, inspections, and honey production.
 
+![HiveManager Screenshot](assets/screenshot.png)
+
 ## Features
 
 ### Authentication

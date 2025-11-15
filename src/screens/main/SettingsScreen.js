@@ -154,19 +154,19 @@ const SettingsScreen = ({ navigation, route }) => {
             <SettingItem
               icon="color-palette-outline"
               title="App Preferences"
-              onPress={() => Alert.alert('App Preferences', 'App preferences coming soon')}
+              onPress={() => navigation.navigate('AppPreferences')}
             />
             <View style={styles.divider} />
             <SettingItem
               icon="notifications-outline"
               title="Notifications"
-              onPress={() => Alert.alert('Notifications', 'Notification settings coming soon')}
+              onPress={() => navigation.navigate('Notifications')}
             />
             <View style={styles.divider} />
             <SettingItem
               icon="person-outline"
               title="Account"
-              onPress={() => Alert.alert('Account', 'Account settings coming soon')}
+              onPress={() => navigation.navigate('Account')}
             />
           </View>
         </SettingSection>
@@ -177,19 +177,19 @@ const SettingsScreen = ({ navigation, route }) => {
             <SettingItem
               icon="help-circle-outline"
               title="Help & Support"
-              onPress={() => Alert.alert('Help & Support', 'Help and support coming soon')}
+              onPress={() => navigation.navigate('HelpSupport')}
             />
             <View style={styles.divider} />
             <SettingItem
               icon="shield-checkmark-outline"
               title="Privacy Policy"
-              onPress={() => Alert.alert('Privacy Policy', 'Privacy policy coming soon')}
+              onPress={() => navigation.navigate('PrivacyPolicy')}
             />
             <View style={styles.divider} />
             <SettingItem
               icon="document-text-outline"
               title="Terms of Service"
-              onPress={() => Alert.alert('Terms of Service', 'Terms of service coming soon')}
+              onPress={() => navigation.navigate('TermsOfService')}
             />
           </View>
         </SettingSection>

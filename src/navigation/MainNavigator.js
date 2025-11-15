@@ -13,6 +13,12 @@ import HoneyProductionScreen from '../screens/main/HoneyProductionScreen';
 import LogHoneyHarvestScreen from '../screens/main/LogHoneyHarvestScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
 import EditProfileScreen from '../screens/main/EditProfileScreen';
+import AppPreferencesScreen from '../screens/main/AppPreferencesScreen';
+import NotificationsScreen from '../screens/main/NotificationsScreen';
+import AccountScreen from '../screens/main/AccountScreen';
+import HelpSupportScreen from '../screens/main/HelpSupportScreen';
+import PrivacyPolicyScreen from '../screens/main/PrivacyPolicyScreen';
+import TermsOfServiceScreen from '../screens/main/TermsOfServiceScreen';
 import AddHiveScreen from '../screens/main/AddHiveScreen';
 
 const Tab = createBottomTabNavigator();
@@ -513,6 +519,234 @@ const SettingsStack = ({ navigation }) => {
           ),
         })}
       />
+      <Stack.Screen
+        name="AppPreferences"
+        component={AppPreferencesScreen}
+        options={({ navigation }) => ({
+          title: 'App Preferences',
+          headerTitleAlign: 'left',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 8,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={({ navigation }) => ({
+          title: 'Notifications',
+          headerTitleAlign: 'left',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 8,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="Account"
+        component={AccountScreen}
+        options={({ navigation }) => ({
+          title: 'Account',
+          headerTitleAlign: 'left',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 8,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="HelpSupport"
+        component={HelpSupportScreen}
+        options={({ navigation }) => ({
+          title: 'Help & Support',
+          headerTitleAlign: 'left',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 8,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="PrivacyPolicy"
+        component={PrivacyPolicyScreen}
+        options={({ navigation }) => ({
+          title: 'Privacy Policy',
+          headerTitleAlign: 'left',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 8,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <Stack.Screen
+        name="TermsOfService"
+        component={TermsOfServiceScreen}
+        options={({ navigation }) => ({
+          title: 'Terms of Service',
+          headerTitleAlign: 'left',
+          headerTintColor: '#000000',
+          headerBackTitleVisible: false,
+          headerStyle: {
+            backgroundColor: '#f9f1e8',
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
+          },
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: '600',
+            fontFamily: FONTS.heading,
+            color: '#343A40',
+            letterSpacing: -0.3,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 16,
+                padding: 8,
+              }}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="chevron-back" size={20} color="#000000" />
+            </TouchableOpacity>
+          ),
+        })}
+      />
     </Stack.Navigator>
   );
 };
@@ -522,7 +756,7 @@ const MainNavigator = () => {
     <Tab.Navigator
       screenOptions={({ route }) => {
         const routeName = getFocusedRouteNameFromRoute(route) ?? 'Dashboard';
-        const hideTabBar = routeName === 'NewInspection' || routeName === 'AddHive' || routeName === 'LogHoneyHarvest' || routeName === 'EditProfile';
+        const hideTabBar = routeName === 'NewInspection' || routeName === 'AddHive' || routeName === 'LogHoneyHarvest' || routeName === 'EditProfile' || routeName === 'AppPreferences' || routeName === 'Notifications' || routeName === 'Account' || routeName === 'HelpSupport' || routeName === 'PrivacyPolicy' || routeName === 'TermsOfService';
 
         return {
           tabBarIcon: ({ focused, color, size }) => {
